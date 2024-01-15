@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "xml_csv.xmlcsv",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 1,
+      "versionName": "1.4.0.0",
+      "outputFile": "Accurate_XML_CSV_2023-12-05_V1.4.0.0.apk"
+    }
+  ],
+  "elementType": "File"
+}

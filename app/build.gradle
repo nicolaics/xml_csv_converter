@@ -1,0 +1,67 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'xml_csv.xmlcsv'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "xml_csv.xmlcsv"
+        minSdk 29
+        targetSdk 33
+        versionCode 1
+        versionName "1.4.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        applicationVariants.all{
+                // this method is use to rename your all apk weather
+                // it may be signed or unsigned(debug apk)
+            variant ->
+                variant.outputs.each{
+                        // on below line we are setting a
+                        // name to our apk as GFG.apk
+                    output->
+                        def date = new Date()
+                        def formattedDate = date.format('yyyy-MM-dd')
+
+                        def name = "Accurate_XML_CSV_${formattedDate}_V${variant.versionName}.apk"
+                        // on below line we are setting the
+                        // outputFile Name to our apk file.
+                        output.outputFileName = name
+                }
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    implementation 'org.apache.commons:commons-csv:1.5'
+
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
