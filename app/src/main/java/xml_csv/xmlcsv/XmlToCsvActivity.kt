@@ -211,33 +211,6 @@ class XmlToCsvActivity: AppCompatActivity() {
                     else if(localName.equals("ITEMRESERVED1")){
                         itemLine.itemReserved1 = currentValue
                     }
-                    else if(localName.equals("ITEMRESERVED2")){
-                        itemLine.itemReserved2 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED3")){
-                        itemLine.itemReserved3 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED4")){
-                        itemLine.itemReserved4 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED5")){
-                        itemLine.itemReserved5 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED6")){
-                        itemLine.itemReserved6 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED7")){
-                        itemLine.itemReserved7 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED8")){
-                        itemLine.itemReserved8 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED9")){
-                        itemLine.itemReserved9 = currentValue
-                    }
-                    else if(localName.equals("ITEMRESERVED10")){
-                        itemLine.itemReserved10 = currentValue
-                    }
                     else if(localName.equals("ITEMOVDESC")){
                         val re = Regex(",")
 
@@ -254,34 +227,11 @@ class XmlToCsvActivity: AppCompatActivity() {
                     else if(localName.equals("ITEMDISCPC")){
                         itemLine.itemDiscPc = convertDouble(currentValue)
                     }
-                    else if(localName.equals("TAXCODES")){
-                        itemLine.taxCodes = currentValue
-                    }
-                    else if(localName.equals("GROUPSEQ")){
-                        itemLine.groupSeq = currentValue
-                    }
-                    else if(localName.equals("SOSEQ")){
-                        itemLine.soSeq = currentValue
-                    }
                     else if(localName.equals("BRUTOUNITPRICE")){
                         itemLine.brutoUnitPrice = convertDouble(currentValue)?: 0.0
                     }
-                    else if(localName.equals("WAREHOUSEID")){
-                        if(invoiceWarehouse){
-                            invoice.warehouse = currentValue
-                        }
-                        else {
-                            itemLine.warehouse = currentValue
-                        }
-                    }
                     else if(localName.equals("QTYCONTROL")){
                         itemLine.qtyControl = convertInt(currentValue)?: 0
-                    }
-                    else if(localName.equals("DOSEQ")){
-                        itemLine.doseQ = currentValue
-                    }
-                    else if(localName.equals("DOID")){
-                        itemLine.doId = currentValue
                     }
                     else if(localName.equals("INVOICENO")){
                         lastInvoice = convertLong(currentValue)!!
@@ -290,65 +240,17 @@ class XmlToCsvActivity: AppCompatActivity() {
                     else if(localName.equals("INVOICEDATE")){
                         invoice.invoiceDate = currentValue
                     }
-                    else if(localName.equals("TAX1ID")){
-                        invoice.tax1Id = currentValue
-                    }
-                    else if(localName.equals("TAX1CODE")){
-                        invoice.tax1Code = currentValue
-                    }
-                    else if(localName.equals("TAX2CODE")){
-                        invoice.tax2Code = currentValue
-                    }
-                    else if(localName.equals("TAX1RATE")){
-                        invoice.tax1Rate = convertInt(currentValue)!!
-                    }
-                    else if(localName.equals("TAX2RATE")){
-                        invoice.tax2Rate = convertInt(currentValue)?: 0
-                    }
-                    else if(localName.equals("RATE")){
-                        invoice.rate = convertInt(currentValue)!!
-                    }
-                    else if(localName.equals("INCLUSIVETAX")){
-                        invoice.inclusiveTax = convertInt(currentValue)?: 1
-                    }
-                    else if(localName.equals("CUSTOMERISTAXABLE")){
-                        invoice.customerIsTaxable = convertInt(currentValue)?: 1
-                    }
                     else if(localName.equals("CASHDISCOUNT")){
                         invoice.cashDiscount = convertDouble(currentValue)?: 0.0
-                    }
-                    else if(localName.equals("CASHDISCPC")){
-                        invoice.cashDiscPc = convertDouble(currentValue)
                     }
                     else if(localName.equals("INVOICEAMOUNT")){
                         invoice.invoiceAmount = convertDouble(currentValue)?: 0.0
                     }
-                    else if(localName.equals("FREIGHT")){
-                        invoice.freight = convertInt(currentValue)?: 0
-                    }
-                    else if(localName.equals("TERMSID")){
-                        invoice.terms = currentValue
-                    }
-                    else if(localName.equals("FOB")){
-                        invoice.fob = currentValue
-                    }
-                    else if(localName.equals("PURCHASEORDERNO")) {
-                        invoice.purchaseOrderNo = convertInt(currentValue)
-                        invoiceWarehouse = true
-                    }
                     else if(localName.equals("DESCRIPTION")){
-//                        val temp = convertComa(currentValue)
-//                        invoice.description = temp!!
                         invoice.description = currentValue
                     }
                     else if(localName.equals("SHIPDATE")){
                         invoice.shipDate = currentValue
-                    }
-                    else if(localName.equals("DELIVERYORDER")){
-                        invoice.deliveryOrder = currentValue
-                    }
-                    else if(localName.equals("FISCALRATE")){
-                        invoice.fiscalRate = convertInt(currentValue)
                     }
                     else if(localName.equals("TAXDATE")){
                         invoice.taxDate = currentValue
@@ -371,32 +273,8 @@ class XmlToCsvActivity: AppCompatActivity() {
                     else if(localName.equals("SHIPTO1")) {
                         invoice.shipTo1 = currentValue
                     }
-                    else if(localName.equals("SHIPTO2")) {
-                        invoice.shipTo2 = currentValue
-                    }
-                    else if(localName.equals("SHIPTO3")) {
-                        invoice.shipTo3 = currentValue
-                    }
-                    else if(localName.equals("SHIPTO4")) {
-                        invoice.shipTo4 = currentValue
-                    }
-                    else if(localName.equals("SHIPTO5")) {
-                        invoice.shipTo5 = currentValue
-                    }
                     else if(localName.equals("ARACCOUNT")) {
                         invoice.arAccount = convertDouble(currentValue)!!
-                    }
-                    else if(localName.equals("TAXFORMNUMBER")) {
-                        invoice.taxFormNumber = convertInt(currentValue)
-                    }
-                    else if(localName.equals("TAXFORMCODE")) {
-                        invoice.taxFormCode = currentValue
-                    }
-                    else if(localName.equals("CURRENCYNAME")) {
-                        invoice.currencyName = currentValue
-                    }
-                    else if(localName.equals("AUTOMATICINSERTGROUPING")) {
-                        invoice.automaticInsertGrouping = currentValue
                     }
                     else if(localName.equals("ITEMLINE")) {
                         invoice.itemLines.add(itemLine)
