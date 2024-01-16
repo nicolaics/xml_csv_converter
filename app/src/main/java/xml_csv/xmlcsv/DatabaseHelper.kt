@@ -14,8 +14,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
     SQLiteOpenHelper(context, databaseName, factory, version){
     companion object{
         const val invoiceTable = "Invoice"
-        const val termsTable = "Terms"
-        const val warehouseTable = "Warehouse"
         const val customerTable = "Customer"
         const val medicinesTable = "Medicines"
         const val salesmanTable = "Salesman"
@@ -29,45 +27,16 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                 "transaction_id REAL UNIQUE, " +
                 "invoice_no REAL UNIQUE, " +
                 "invoice_date TEXT, " +
-                "tax_1_id VARCHAR(8), " +
-                "tax_1_code VARCHAR(8), " +
-                "tax_2_code VARCHAR(8), " +
-                "tax_1_rate INTEGER, " +
-                "tax_2_rate INTEGER, " +
-                "rate INTEGER, " +
-                "inclusive_tax INTEGER, " +
-                "customer_is_taxable INTEGER, " +
                 "cash_discount REAL, " +
-                "cash_disc_pc REAL, " +
                 "invoice_amount REAL, " +
-                "freight INTEGER, " +
-                "terms_id INTEGER, " +
-                "fob TEXT, " +
-                "purchase_order_no INTEGER, " +
-                "warehouse_id INTEGER, " +
                 "invoice_description TEXT, " +
                 "ship_date TEXT, " +
-                "delivery_order TEXT, " +
-                "fiscal_rate INTEGER, " +
                 "tax_date TEXT, " +
                 "customer_id INTEGER, " +
                 "salesman_id INTEGER, " +
                 "printed INTEGER, " +
                 "ship_to_1_id INTEGER, " +
-                "ship_to_2_id INTEGER, " +
-                "ship_to_3_id INTEGER, " +
-                "ship_to_4_id INTEGER, " +
-                "ship_to_5_id INTEGER, " +
-                "ar_account REAL, " +
-                "tax_form_number INTEGER, " +
-                "tax_form_code VARCHAR(8), " +
-                "currency_name VARCHAR(8), " +
-                "automatic_insert_grouping TEXT)")
-        db?.execSQL(command)
-
-        command = ("CREATE TABLE " + termsTable + " " +
-                   "(id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                   "terms TEXT UNIQUE)")
+                "ar_account REAL)")
         db?.execSQL(command)
 
         command = ("CREATE TABLE " + medicinesTable + " " +
@@ -79,11 +48,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                    "unit_price REAL, " +
                     "bruto_unit_price REAL, " +
                    "warehouse_id INTEGER)")
-        db?.execSQL(command)
-
-        command = ("CREATE TABLE " + warehouseTable + " " +
-                   "(id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                   "warehouse TEXT UNIQUE)")
         db?.execSQL(command)
 
         command = ("CREATE TABLE " + salesmanTable + " " +
@@ -102,22 +66,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                    "medicine_id INTEGER, " +
                    "quantity REAL, " +
                    "item_reserved_1 TEXT, " +
-                   "item_reserved_2 TEXT, " +
-                   "item_reserved_3 TEXT, " +
-                   "item_reserved_4 TEXT, " +
-                   "item_reserved_5 TEXT, " +
-                   "item_reserved_6 TEXT, " +
-                   "item_reserved_7 TEXT, " +
-                   "item_reserved_8 TEXT, " +
-                   "item_reserved_9 TEXT, " +
-                   "item_reserved_10 TEXT, " +
-                   "item_disc_pc REAL, " +
-                   "tax_codes VARCHAR(8), " +
-                   "group_seq TEXT, " +
-                   "so_seq TEXT, " +
-                   "quantity_control INTEGER, " +
-                   "dose_q TEXT, " +
-                   "do_id TEXT)")
+                   "item_disc_pc REAL)")
         db?.execSQL(command)
 
         command = ("CREATE TABLE " + bufTable + " " +
@@ -131,12 +80,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         db?.execSQL(command)
 
         command = "DROP TABLE IF EXISTS Medicines"
-        db?.execSQL(command)
-
-        command = "DROP TABLE IF EXISTS Terms"
-        db?.execSQL(command)
-
-        command = "DROP TABLE IF EXISTS Warehouse"
         db?.execSQL(command)
 
         command = "DROP TABLE IF EXISTS Salesman"
@@ -162,13 +105,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
 
         invoices.forEach {
             println(it.invoiceNo)
-            val termsValues = ContentValues()
-            termsValues.put("terms", it.terms)
-            val termsId = insertPartialDataAndGetId(termsValues, termsTable, "terms", arrayOf(it.terms))
-
-            val warehouseInvoiceValues = ContentValues()
-            warehouseInvoiceValues.put("warehouse", it.warehouse)
-            val warehouseInvoiceId = insertPartialDataAndGetId(warehouseInvoiceValues, warehouseTable, "warehouse", arrayOf(it.warehouse))
 
             val customerValues = ContentValues()
             customerValues.put("customer", it.customer)
@@ -190,63 +126,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
             var shipToValues = ContentValues()
             shipToValues.put("customer",it.shipTo1)
             val shipTo1Id = insertPartialDataAndGetId(shipToValues, customerTable, "customer", arrayOf(it.shipTo1))
-
-            val shipTo2Id : Int
-            val shipTo3Id : Int
-            val shipTo4Id : Int
-            val shipTo5Id : Int
-
-            if(it.shipTo2 != null) {
-                shipToValues = ContentValues()
-                shipToValues.put("customer", it.shipTo2)
-                shipTo2Id = insertPartialDataAndGetId(
-                    shipToValues,
-                    customerTable, "customer",
-                    arrayOf(it.shipTo2)
-                )
-            }
-            else{
-                shipTo2Id = 0
-            }
-
-            if(it.shipTo3 != null) {
-                shipToValues = ContentValues()
-                shipToValues.put("customer", it.shipTo3)
-                shipTo3Id = insertPartialDataAndGetId(
-                    shipToValues,
-                    customerTable, "customer",
-                    arrayOf(it.shipTo3)
-                )
-            }
-            else{
-                shipTo3Id = 0
-            }
-
-            if(it.shipTo4 != null) {
-                shipToValues = ContentValues()
-                shipToValues.put("customer", it.shipTo4)
-                shipTo4Id = insertPartialDataAndGetId(
-                    shipToValues,
-                    customerTable, "customer",
-                    arrayOf(it.shipTo4)
-                )
-            }
-            else{
-                shipTo4Id = 0
-            }
-
-            if(it.shipTo5 != null) {
-                shipToValues = ContentValues()
-                shipToValues.put("customer", it.shipTo5)
-                shipTo5Id = insertPartialDataAndGetId(
-                    shipToValues,
-                    customerTable, "customer",
-                    arrayOf(it.shipTo5)
-                )
-            }
-            else{
-                shipTo5Id = 0
-            }
 
             for(iter in it.itemLines){
                 val medicineValues = ContentValues()
@@ -272,13 +151,6 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                 medicineValues.put("unit_price", unitPrice)
                 medicineValues.put("bruto_unit_price", brutoUnitPrice)
 
-                val warehouseMedicineValues = ContentValues()
-                warehouseMedicineValues.put("warehouse", iter.warehouse)
-                val warehouseMedicineId = insertPartialDataAndGetId(warehouseMedicineValues, warehouseTable,
-                    "warehouse", arrayOf(iter.warehouse))
-
-                medicineValues.put("warehouse_id", warehouseMedicineId)
-
                 val medicineId = insertPartialDataAndGetId(medicineValues, medicinesTable, "barcode", arrayOf(barcode))
 
                 val resultCursor = dbRead.rawQuery("SELECT * FROM Each_Item WHERE medicine_id = ? AND quantity = ?",
@@ -293,67 +165,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                         insertEachItem(medicineId, iter)
                         continue
                     }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_2")), iter.itemReserved2)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_3")), iter.itemReserved3)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_4")), iter.itemReserved4)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_5")), iter.itemReserved5)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_6")), iter.itemReserved6)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_7")), iter.itemReserved7)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_8")), iter.itemReserved8)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_9")), iter.itemReserved9)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_reserved_10")), iter.itemReserved10)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
                     if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("item_disc_pc")), iter.itemDiscPc)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("tax_codes")), iter.taxCodes)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("group_seq")), iter.groupSeq)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("so_seq")), iter.soSeq)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("quantity_control")), iter.qtyControl)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("dose_q")), iter.doseQ)){
-                        insertEachItem(medicineId, iter)
-                        continue
-                    }
-                    if(!compare(resultCursor.getStringOrNull(resultCursor.getColumnIndex("do_id")), iter.doId)){
                         insertEachItem(medicineId, iter)
                         continue
                     }
@@ -378,40 +190,16 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
             invoiceValues.put("transaction_id", it.transactionId)
             invoiceValues.put("invoice_no", it.invoiceNo)
             invoiceValues.put("invoice_date", it.invoiceDate)
-            invoiceValues.put("tax_1_id", it.tax1Id)
-            invoiceValues.put("tax_1_code", it.tax1Code)
-            invoiceValues.put("tax_2_code", it.tax2Code)
-            invoiceValues.put("tax_1_rate", it.tax1Rate)
-            invoiceValues.put("tax_2_rate", it.tax2Rate)
-            invoiceValues.put("rate", it.rate)
-            invoiceValues.put("inclusive_tax", it.inclusiveTax)
-            invoiceValues.put("customer_is_taxable", it.customerIsTaxable)
             invoiceValues.put("cash_discount", it.cashDiscount)
-            invoiceValues.put("cash_disc_pc", it.cashDiscPc)
             invoiceValues.put("invoice_amount", it.invoiceAmount.roundToLong())
-            invoiceValues.put("freight", it.freight)
-            invoiceValues.put("terms_id", termsId)
-            invoiceValues.put("fob", it.fob)
-            invoiceValues.put("purchase_order_no", it.purchaseOrderNo)
-            invoiceValues.put("warehouse_id", warehouseInvoiceId)
             invoiceValues.put("invoice_description", it.description)
             invoiceValues.put("ship_date", it.shipDate)
-            invoiceValues.put("delivery_order", it.deliveryOrder)
-            invoiceValues.put("fiscal_rate", it.fiscalRate)
             invoiceValues.put("tax_date", it.taxDate)
             invoiceValues.put("customer_id", customerId)
             invoiceValues.put("salesman_id", salesmanId)
             invoiceValues.put("printed", it.printed)
             invoiceValues.put("ship_to_1_id", shipTo1Id)
-            invoiceValues.put("ship_to_2_id", shipTo2Id)
-            invoiceValues.put("ship_to_3_id", shipTo3Id)
-            invoiceValues.put("ship_to_4_id", shipTo4Id)
-            invoiceValues.put("ship_to_5_id", shipTo5Id)
             invoiceValues.put("ar_account", it.arAccount)
-            invoiceValues.put("tax_form_number", it.taxFormNumber)
-            invoiceValues.put("tax_form_code", it.taxFormCode)
-            invoiceValues.put("currency_name", it.currencyName)
-            invoiceValues.put("automatic_insert_grouping", it.automaticInsertGrouping)
 
             dbWrite.insert("Invoice", null, invoiceValues)
             invoiceId++
@@ -453,22 +241,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         eachItemValues.put("medicine_id", medicineId)
         eachItemValues.put("quantity", iter.quantity)
         eachItemValues.put("item_reserved_1", iter.itemReserved1)
-        eachItemValues.put("item_reserved_2", iter.itemReserved2)
-        eachItemValues.put("item_reserved_3", iter.itemReserved3)
-        eachItemValues.put("item_reserved_4", iter.itemReserved4)
-        eachItemValues.put("item_reserved_5", iter.itemReserved5)
-        eachItemValues.put("item_reserved_6", iter.itemReserved6)
-        eachItemValues.put("item_reserved_7", iter.itemReserved7)
-        eachItemValues.put("item_reserved_8", iter.itemReserved8)
-        eachItemValues.put("item_reserved_9", iter.itemReserved9)
-        eachItemValues.put("item_reserved_10", iter.itemReserved10)
         eachItemValues.put("item_disc_pc", iter.itemDiscPc)
-        eachItemValues.put("tax_codes", iter.taxCodes)
-        eachItemValues.put("group_seq", iter.groupSeq)
-        eachItemValues.put("so_seq", iter.soSeq)
-        eachItemValues.put("quantity_control", iter.qtyControl)
-        eachItemValues.put("dose_q", iter.doseQ)
-        eachItemValues.put("do_id", iter.doId)
 
         dbWrite.insert(eachItemTable, null, eachItemValues)
     }
@@ -480,13 +253,10 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         val dbRead = this.readableDatabase
 
         val invoiceCursor = dbRead.rawQuery("SELECT * FROM Invoice WHERE invoice_no = ?", arrayOf(invoiceNo.toString()))
-        val additionalCursor = dbRead.rawQuery("SELECT Terms.terms, Warehouse.warehouse, " +
-                                                    "Salesman.last_name, Salesman.first_name, " +
-                                                    "Customer.customer FROM Invoice JOIN Terms JOIN Warehouse " +
+        val additionalCursor = dbRead.rawQuery("SELECT Salesman.last_name, Salesman.first_name, " +
+                                                    "Customer.customer FROM Invoice " +
                                                     "JOIN Salesman JOIN Customer " +
-                                                    "on Invoice.terms_id = terms.id " +
-                                                    "AND Invoice.warehouse_id = Warehouse.id " +
-                                                    "AND Invoice.salesman_id = Salesman.id " +
+                                                    "on Invoice.salesman_id = Salesman.id " +
                                                     "AND Invoice.customer_id = Customer.id " +
                                                     "WHERE invoice_no = ?", arrayOf(invoiceNo.toString())
         )
@@ -495,42 +265,18 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         additionalCursor.moveToFirst()
 
         dbInvoice.transactionId = invoiceCursor.getLong(invoiceCursor.getColumnIndex("transaction_id"))
-        dbInvoice.tax1Id = invoiceCursor.getString(invoiceCursor.getColumnIndex("tax_1_id"))
-        dbInvoice.tax1Code = invoiceCursor.getString(invoiceCursor.getColumnIndex("tax_1_code"))
-        dbInvoice.tax2Code = invoiceCursor.getStringOrNull(invoiceCursor.getColumnIndex("tax_2_code"))
-        dbInvoice.tax1Rate = invoiceCursor.getInt(invoiceCursor.getColumnIndex("tax_1_rate"))
-        dbInvoice.tax2Rate = invoiceCursor.getInt(invoiceCursor.getColumnIndex("tax_2_rate"))
-        dbInvoice.rate = invoiceCursor.getInt(invoiceCursor.getColumnIndex("rate"))
-        dbInvoice.inclusiveTax = invoiceCursor.getInt(invoiceCursor.getColumnIndex("inclusive_tax"))
-        dbInvoice.customerIsTaxable = invoiceCursor.getInt(invoiceCursor.getColumnIndex("customer_is_taxable"))
         dbInvoice.cashDiscount = invoiceCursor.getDouble(invoiceCursor.getColumnIndex("cash_discount"))
-        dbInvoice.cashDiscPc = invoiceCursor.getDoubleOrNull(invoiceCursor.getColumnIndex("cash_disc_pc"))
-        dbInvoice.freight = invoiceCursor.getInt(invoiceCursor.getColumnIndex("freight"))
-        dbInvoice.terms = additionalCursor.getString(additionalCursor.getColumnIndex("terms"))
-        dbInvoice.fob = invoiceCursor.getStringOrNull(invoiceCursor.getColumnIndex("fob"))
-        dbInvoice.purchaseOrderNo = invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("purchase_order_no"))
-        dbInvoice.warehouse = additionalCursor.getString(additionalCursor.getColumnIndex("warehouse"))
         dbInvoice.shipDate = invoiceCursor.getString(invoiceCursor.getColumnIndex("ship_date"))
-        dbInvoice.deliveryOrder = invoiceCursor.getStringOrNull(invoiceCursor.getColumnIndex("delivery_order"))
-        dbInvoice.fiscalRate = invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("fiscal_rate"))
         dbInvoice.taxDate = invoiceCursor.getString(invoiceCursor.getColumnIndex("tax_date"))
         dbInvoice.customer = additionalCursor.getString(additionalCursor.getColumnIndex("customer"))
         dbInvoice.salesman.setLastName(additionalCursor.getStringOrNull(additionalCursor.getColumnIndex("last_name")))
         dbInvoice.salesman.setFirstName(additionalCursor.getString(additionalCursor.getColumnIndex("first_name")))
         dbInvoice.printed = invoiceCursor.getInt(invoiceCursor.getColumnIndex("printed"))
 
-        val shipTo = ArrayList<Int?>()
-        shipTo.add(invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_1_id")))
-        shipTo.add(invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_2_id")))
-        shipTo.add(invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_3_id")))
-        shipTo.add(invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_4_id")))
-        shipTo.add(invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_5_id")))
+        val shipTo1Id = invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_1_id"))
 
+        dbInvoice.shipTo1 = additionalCursor.getString(shipTo1Id?: 0)
         dbInvoice.arAccount = invoiceCursor.getDouble(invoiceCursor.getColumnIndex("ar_account"))
-        dbInvoice.taxFormNumber = invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("tax_form_number"))
-        dbInvoice.taxFormCode = invoiceCursor.getStringOrNull(invoiceCursor.getColumnIndex("tax_form_code"))
-        dbInvoice.currencyName = invoiceCursor.getString(invoiceCursor.getColumnIndex("currency_name"))
-        dbInvoice.automaticInsertGrouping = invoiceCursor.getStringOrNull(invoiceCursor.getColumnIndex("automatic_insert_grouping"))
 
         invoiceCursor.close()
         additionalCursor.close()
@@ -555,11 +301,10 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
 
         val dbRead = this.readableDatabase
         val cursor = dbRead.rawQuery("SELECT Medicines.unit_ratio, " +
-                "Medicines.bruto_unit_price, Medicines.item_unit, Each_Item.*, " +
-                "Warehouse.warehouse FROM Each_Item JOIN Medicines JOIN Invoice " +
-                "JOIN Warehouse JOIN Buf on Buf.each_item_id = Each_Item.id " +
+                "Medicines.bruto_unit_price, Medicines.item_unit, Each_Item.* " +
+                "FROM Each_Item JOIN Medicines JOIN Invoice " +
+                "JOIN Buf on Buf.each_item_id = Each_Item.id " +
                 "AND Buf.invoice_id = Invoice.id AND Each_Item.medicine_id = Medicines.id " +
-                "AND Warehouse.id = Medicines.warehouse_id " +
                 "WHERE Invoice.invoice_no = ? AND Medicines.barcode = ?",
             arrayOf(invoiceNo.toString(), barcode))
 
@@ -568,22 +313,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         if(cursor.count != 0) {
             finalItemLine.itemUnit = cursor.getString(cursor.getColumnIndex("item_unit"))
             finalItemLine.unitRatio = cursor.getInt(cursor.getColumnIndex("unit_ratio"))
-            finalItemLine.itemReserved2 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_2"))
-            finalItemLine.itemReserved3 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_3"))
-            finalItemLine.itemReserved4 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_4"))
-            finalItemLine.itemReserved5 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_5"))
-            finalItemLine.itemReserved6 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_6"))
-            finalItemLine.itemReserved7 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_7"))
-            finalItemLine.itemReserved8 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_8"))
-            finalItemLine.itemReserved9 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_9"))
-            finalItemLine.itemReserved10 = cursor.getStringOrNull(cursor.getColumnIndex("item_reserved_10"))
             finalItemLine.itemDiscPc = cursor.getDoubleOrNull(cursor.getColumnIndex("item_disc_pc"))
-            finalItemLine.taxCodes = cursor.getStringOrNull(cursor.getColumnIndex("tax_codes"))
-            finalItemLine.groupSeq = cursor.getStringOrNull(cursor.getColumnIndex("group_seq"))
-            finalItemLine.soSeq = cursor.getStringOrNull(cursor.getColumnIndex("so_seq"))
-            finalItemLine.warehouse = cursor.getString(cursor.getColumnIndex("warehouse"))
-            finalItemLine.doseQ = cursor.getStringOrNull(cursor.getColumnIndex("dose_q"))
-            finalItemLine.doId = cursor.getStringOrNull(cursor.getColumnIndex("do_id"))
         }
 
         cursor.close()
