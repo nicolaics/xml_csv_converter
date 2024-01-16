@@ -7,10 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 import java.io.*
@@ -27,85 +24,92 @@ class XmlToCsvActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_xml_to_csv)
 
-        val uriString = intent.getStringExtra(SelectXmlFileActivity.EXT_URI_STRING)
-        val xmlFileName = intent.getStringExtra(SelectXmlFileActivity.EXT_FILE_NAME)
+        CoroutineScope(Dispatchers.IO).launch {
+            val uriString = intent.getStringExtra(SelectXmlFileActivity.EXT_URI_STRING)
+            val xmlFileName = intent.getStringExtra(SelectXmlFileActivity.EXT_FILE_NAME)
 
-        val fileName = xmlFileName!!.removeSuffix(".xml")
+            val fileName = xmlFileName!!.removeSuffix(".xml")
 
-        val csvFileName = "$fileName.csv"
+            val csvFileName = "$fileName.csv"
 
-        val xmlUri = Uri.parse(uriString)
+            val xmlUri = Uri.parse(uriString)
 
-        var invoicesList = ArrayList<Invoice>()
+            var invoicesList = ArrayList<Invoice>()
 
-        val path = applicationContext.externalMediaDirs.first()
+            val path = applicationContext.externalMediaDirs.first()
 
-        val databaseFile = File(path, "temp_database.sqlite").path
+            val databaseFile = File(path, "temp_database.sqlite").path
 
-        val databaseVersionFile = File(path, "Database_Version.txt")
-        var databaseVersion = 1
+            val databaseVersionFile = File(path, "Database_Version.txt")
+            var databaseVersion = 1
 
-        try {
-            databaseVersion = databaseVersionFile.readText().toInt()
-            databaseVersion++
+            try {
+                databaseVersion = databaseVersionFile.readText().toInt()
+                databaseVersion++
 
-            databaseVersionFile.writeText("$databaseVersion")
-        }
-        catch(e: java.lang.Exception) {
-            databaseVersionFile.writeText("$databaseVersion")
-        }
-
-        try {
-            contentResolver.openInputStream(xmlUri)?.use {inputStream ->
-                invoicesList = parse(inputStream, databaseFile, databaseVersion)
+                databaseVersionFile.writeText("$databaseVersion")
+            }
+            catch(e: java.lang.Exception) {
+                databaseVersionFile.writeText("$databaseVersion")
             }
 
-            val date = LocalDate.now().toString()
+            try {
+                contentResolver.openInputStream(xmlUri)?.use {inputStream ->
+                    invoicesList = parse(inputStream)
+                }
 
-            val dir = File(path, date)
-            dir.mkdirs()
+                val date = LocalDate.now().toString()
 
-            val csvFile = File(dir, csvFileName)
+                val dir = File(path, date)
+                dir.mkdirs()
 
-            FileOutputStream(csvFile).apply {
-                writeCsv(invoicesList)
+                val csvFile = File(dir, csvFileName)
+
+                FileOutputStream(csvFile).apply {
+                    writeCsv(invoicesList)
+                }
+
+                val xmlToCsvListView = findViewById<ListView>(R.id.xmlToCsvListView)
+
+                val database =
+                    DatabaseHelper(applicationContext, null, databaseFile, databaseVersion)
+                database.addData(invoicesList, xmlToCsvListView, applicationContext)
+
+                withContext(Dispatchers.Main) {
+                    val fileCreatedTextView = findViewById<TextView>(R.id.fileCreatedTextView)
+                    fileCreatedTextView.text = "File succesfully created at\n${csvFile.path}"
+                }
+            }
+            catch(e: java.lang.Exception) {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+                val dateTime = LocalDateTime.now().format(formatter).toString()
+
+                val logFileName = "Log_${dateTime}.txt"
+
+                val logFilePath = File(path, logFileName)
+                val stringWriter = StringWriter()
+                e.printStackTrace(PrintWriter(stringWriter))
+
+                var exceptionAsString = stringWriter.toString()
+                exceptionAsString += "\n\n"
+                exceptionAsString += "Last Invoice: ${lastInvoice}\n"
+                exceptionAsString += "Last Medicine: ${lastMedicine}\n"
+
+                logFilePath.writeText(exceptionAsString)
+
+                val errorIntent = Intent(this@XmlToCsvActivity, ErrorActivity::class.java).apply {
+                    putExtra(CsvToXmlActivity.EXT_LOG, logFileName)
+                    putExtra(CsvToXmlActivity.EXT_ERROR_TYPE, 0)
+                }
+                startActivity(errorIntent)
+
+                finish()
             }
 
-            val database = DatabaseHelper(applicationContext, null, databaseFile, databaseVersion)
-            database.addData(invoicesList)
-
-            val fileCreatedTextView = findViewById<TextView>(R.id.fileCreatedTextView)
-            fileCreatedTextView.text = "File succesfully created at\n${csvFile.path}"
-        }
-        catch(e: java.lang.Exception){
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
-            val dateTime = LocalDateTime.now().format(formatter).toString()
-
-            val logFileName = "Log_${dateTime}.txt"
-
-            val logFilePath = File(path, logFileName)
-            val stringWriter = StringWriter()
-            e.printStackTrace(PrintWriter(stringWriter))
-
-            var exceptionAsString = stringWriter.toString()
-            exceptionAsString += "\n\n"
-            exceptionAsString += "Last Invoice: ${lastInvoice}\n"
-            exceptionAsString += "Last Medicine: ${lastMedicine}\n"
-
-            logFilePath.writeText(exceptionAsString)
-
-            val errorIntent = Intent(this@XmlToCsvActivity, ErrorActivity::class.java).apply{
-                putExtra(CsvToXmlActivity.EXT_LOG, logFileName)
-                putExtra(CsvToXmlActivity.EXT_ERROR_TYPE, 0)
+            val finishButton = findViewById<Button>(R.id.finishButton)
+            finishButton.setOnClickListener {
+                finish()
             }
-            startActivity(errorIntent)
-
-            finish()
-        }
-
-        val finishButton = findViewById<Button>(R.id.finishButton)
-        finishButton.setOnClickListener {
-            finish()
         }
     }
 
@@ -145,8 +149,8 @@ class XmlToCsvActivity: AppCompatActivity() {
         writer.close()
     }
 
-    private fun parse(inputStream: InputStream, databaseFile: String, databaseVersion: Int) : ArrayList<Invoice>{
-//    private fun parse(inputStream: InputStream, databaseFile: String, databaseVersion: Int) = CoroutineScope(Dispatchers.Default).async{
+    private fun parse(inputStream: InputStream) : ArrayList<Invoice>{
+//    private fun parse(inputStream: InputStream, databaseFile: String, databaseVersion: Int) = CoroutineScope(Dispatchers.IO).async{
         val parserFactory = SAXParserFactory.newInstance()
         val parser = parserFactory.newSAXParser()
 
@@ -155,7 +159,6 @@ class XmlToCsvActivity: AppCompatActivity() {
         var salesman = Salesman()
         val invoices = ArrayList<Invoice>()
 
-        var invoiceWarehouse = false
         var insertInvoice = true
 
         val defaultHandler = object : DefaultHandler(){
@@ -173,7 +176,6 @@ class XmlToCsvActivity: AppCompatActivity() {
 
                 if(localName == "SALESINVOICE" && attributes?.getValue("operation") == "Add"){
                     invoice = Invoice()
-                    invoiceWarehouse = false
                     insertInvoice = true
                 }
                 else if(localName == "SALESINVOICE" && attributes?.getValue("operation") != "Add"){
@@ -293,18 +295,6 @@ class XmlToCsvActivity: AppCompatActivity() {
         }
 
         parser.parse(inputStream, defaultHandler)
-
-        val xmlToCsvListView = findViewById<ListView>(R.id.xmlToCsvListView)
-        val xmlToCsvListViewAdapter = XmlToCsvListViewAdapter(applicationContext, invoices)
-
-        xmlToCsvListView.adapter = xmlToCsvListViewAdapter
-
-//        CoroutineScope(Dispatchers.Main).launch{
-//            val xmlToCsvListView = findViewById<ListView>(R.id.xmlToCsvListView)
-//
-//            val xmlToCsvListViewAdapter = XmlToCsvListViewAdapter(applicationContext, invoices)
-//            xmlToCsvListView.adapter = xmlToCsvListViewAdapter
-//        }
 
         return invoices
 //        return@async invoices

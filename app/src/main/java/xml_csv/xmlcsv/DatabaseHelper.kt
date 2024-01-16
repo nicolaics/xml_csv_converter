@@ -5,9 +5,14 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.widget.ListView
 import androidx.core.database.getDoubleOrNull
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToLong
 
 class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, databaseName : String, version : Int) :
@@ -97,11 +102,12 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         onCreate(db)
     }
 
-    fun addData(invoices : ArrayList<Invoice>){
+    fun addData(invoices : ArrayList<Invoice>, listView: ListView, context: Context){
         val dbWrite = this.writableDatabase
         val dbRead = this.readableDatabase
 
         var invoiceId = 1
+        val tempInvoiceNoList = ArrayList<Long>()
 
         invoices.forEach {
             println(it.invoiceNo)
@@ -203,6 +209,13 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
 
             dbWrite.insert("Invoice", null, invoiceValues)
             invoiceId++
+
+            tempInvoiceNoList.add(it.invoiceNo)
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val xmlToCsvListViewAdapter = XmlToCsvListViewAdapter(context, tempInvoiceNoList)
+                listView.adapter = xmlToCsvListViewAdapter
+            }
         }
 
         dbWrite.close()
