@@ -24,6 +24,9 @@ class XmlToCsvActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_xml_to_csv)
 
+        val finishButton = findViewById<Button>(R.id.finishButton)
+        finishButton.isEnabled = false
+
         CoroutineScope(Dispatchers.IO).launch {
             val uriString = intent.getStringExtra(SelectXmlFileActivity.EXT_URI_STRING)
             val xmlFileName = intent.getStringExtra(SelectXmlFileActivity.EXT_FILE_NAME)
@@ -78,6 +81,8 @@ class XmlToCsvActivity: AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     val fileCreatedTextView = findViewById<TextView>(R.id.fileCreatedTextView)
                     fileCreatedTextView.text = "File succesfully created at\n${csvFile.path}"
+
+                    finishButton.isEnabled = true
                 }
             }
             catch(e: java.lang.Exception) {
@@ -106,7 +111,6 @@ class XmlToCsvActivity: AppCompatActivity() {
                 finish()
             }
 
-            val finishButton = findViewById<Button>(R.id.finishButton)
             finishButton.setOnClickListener {
                 finish()
             }
