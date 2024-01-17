@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -23,15 +24,28 @@ class SelectWhichMedicineActivity: AppCompatActivity() {
         medicineListView.adapter = selectMedicineAdapter
 
         finishSelectMedicineButton.setOnClickListener {
-            selectMedicineList.forEach {
-                println(it.choice)
-            }
-            val data = Gson().toJson(selectMedicineList)
+            var hasChosen = true
 
-            val sendBackIntent = Intent()
-            sendBackIntent.putExtra(CsvToXmlActivity.EXT_MEDICINE_RESULT, data)
-            setResult(RESULT_OK, sendBackIntent)
-            finish()
+            for(iter in selectMedicineList){
+                if(iter.chosenMedicine.size != 1){
+                    Toast.makeText(applicationContext, "Choose only 1 Medicines", Toast.LENGTH_LONG).show()
+                    hasChosen = false
+                    break
+                }
+            }
+
+//            selectMedicineList.forEach {
+//                println(it.chosenMedicine[0])
+//            }
+
+            if(hasChosen) {
+                val data = Gson().toJson(selectMedicineList)
+
+                val sendBackIntent = Intent()
+                sendBackIntent.putExtra(CsvToXmlActivity.EXT_MEDICINE_RESULT, data)
+                setResult(RESULT_OK, sendBackIntent)
+                finish()
+            }
         }
     }
 }

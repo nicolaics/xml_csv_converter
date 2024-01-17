@@ -59,7 +59,7 @@ class MedicineDatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFa
                 medicine.invoiceNo = invoiceNo
 
                 medicineLists.add(medicine)
-                Toast.makeText(context, "Medicine not found: ${medicineName}\nfor Invoice No: ${invoiceNo}!", Toast.LENGTH_LONG).show()
+//                Toast.makeText(context, "Medicine not found: ${medicineName}\nfor Invoice No: ${invoiceNo}!", Toast.LENGTH_LONG).show()
             }
 
             secondSearchCursor.close()

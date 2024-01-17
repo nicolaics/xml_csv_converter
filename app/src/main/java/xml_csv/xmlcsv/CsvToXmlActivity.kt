@@ -9,6 +9,10 @@ import android.widget.Button
 import android.widget.TextView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -37,6 +41,8 @@ class CsvToXmlActivity: AppCompatActivity() {
     private var lastInvoice : Long = 0
     private var lastMedicine = ""
 
+    private lateinit var csvToXmlFinishButton : Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_csv_to_xml)
@@ -52,68 +58,84 @@ class CsvToXmlActivity: AppCompatActivity() {
 
         val databaseVersion = databaseVersionFile.readText().toInt()
 
-        try {
-            contentResolver.openInputStream(csvUri)?.use {inputStream ->
-                invoicesList = readCsv(inputStream, databaseFile, databaseVersion)
-            }
+        csvToXmlFinishButton = findViewById<Button>(R.id.finishCsvToXmlButton)
+        csvToXmlFinishButton.isEnabled = false
 
-            if(selectMedicineList.size > 0) {
-                val data = Gson().toJson(selectMedicineList)
-
-                val selectWhichMedicineIntent =
-                    Intent(this@CsvToXmlActivity, SelectWhichMedicineActivity::class.java).apply {
-                        putExtra(EXT_MEDICINE_RESULT, data)
-                    }
-                startActivityForResult(selectWhichMedicineIntent, 1000)
-            }
-            else {
-                val date = LocalDate.now().toString()
-                val dir = File(path, date)
-
-                if(medicineNotFoundList.size != 0){
-                    val notFoundData = Gson().toJson(medicineNotFoundList)
-
-                    val errorIntent = Intent(this@CsvToXmlActivity, ErrorActivity::class.java).apply{
-                        putExtra(EXT_MEDICINE_NOT_FOUND, notFoundData)
-                        putExtra(EXT_ERROR_TYPE, 1)
-                    }
-                    startActivity(errorIntent)
-                    finish()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                contentResolver.openInputStream(csvUri)?.use {
+                        inputStream -> invoicesList = readCsv(inputStream, databaseFile, databaseVersion)
                 }
 
-                createXmlFile(path, dir)
+                if(selectMedicineList.size > 0) {
+                    val data = Gson().toJson(selectMedicineList)
+
+                    val selectWhichMedicineIntent =
+                        Intent(
+                            this@CsvToXmlActivity,
+                            SelectWhichMedicineActivity::class.java
+                        ).apply {
+                            putExtra(EXT_MEDICINE_RESULT, data)
+                        }
+                    startActivityForResult(selectWhichMedicineIntent, 1000)
+                }
+                else {
+                    val date = LocalDate.now().toString()
+                    val dir = File(path, date)
+
+                    if(medicineNotFoundList.size != 0) {
+                        val notFoundData = Gson().toJson(medicineNotFoundList)
+
+                        val errorIntent =
+                            Intent(this@CsvToXmlActivity, ErrorActivity::class.java).apply {
+                                putExtra(EXT_MEDICINE_NOT_FOUND, notFoundData)
+                                putExtra(EXT_ERROR_TYPE, 1)
+                            }
+                        startActivity(errorIntent)
+                        finish()
+                    }
+                    else {
+                        val xmlFile = createXmlFile(path, dir)
+
+                        withContext(Dispatchers.Main) {
+                            val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
+                            xmlFileCreatedTextView.text = "File created at:\n${xmlFile.path}"
+
+                            csvToXmlFinishButton.isEnabled = true
+                        }
+                    }
+                }
             }
-        }
-        catch(e: java.lang.Exception){
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
-            val dateTime = LocalDateTime.now().format(formatter).toString()
+            catch(e: java.lang.Exception) {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+                val dateTime = LocalDateTime.now().format(formatter).toString()
 
-            val logFileName = "Log_${dateTime}.txt"
+                val logFileName = "Log_${dateTime}.txt"
 
-            val logFilePath = File(path, logFileName)
-            val stringWriter = StringWriter()
-            e.printStackTrace()
-            e.printStackTrace(PrintWriter(stringWriter))
+                val logFilePath = File(path, logFileName)
+                val stringWriter = StringWriter()
+                e.printStackTrace()
+                e.printStackTrace(PrintWriter(stringWriter))
 
-            var exceptionAsString = stringWriter.toString()
-            exceptionAsString += "\n\n"
-            exceptionAsString += "Last Invoice: ${lastInvoice}\n"
-            exceptionAsString += "Last Medicine: ${lastMedicine}\n"
+                var exceptionAsString = stringWriter.toString()
+                exceptionAsString += "\n\n"
+                exceptionAsString += "Last Invoice: ${lastInvoice}\n"
+                exceptionAsString += "Last Medicine: ${lastMedicine}\n"
 
-            logFilePath.writeText(exceptionAsString)
+                logFilePath.writeText(exceptionAsString)
 
-            val errorIntent = Intent(this@CsvToXmlActivity, ErrorActivity::class.java).apply{
-                putExtra(EXT_LOG, logFileName)
-                putExtra(EXT_ERROR_TYPE, 0)
+                val errorIntent = Intent(this@CsvToXmlActivity, ErrorActivity::class.java).apply {
+                    putExtra(EXT_LOG, logFileName)
+                    putExtra(EXT_ERROR_TYPE, 0)
+                }
+                startActivity(errorIntent)
+
+                finish()
             }
-            startActivity(errorIntent)
 
-            finish()
-        }
-
-        val csvToXmlFinishButton = findViewById<Button>(R.id.finishCsvToXmlButton)
-        csvToXmlFinishButton.setOnClickListener {
-            finish()
+            csvToXmlFinishButton.setOnClickListener {
+                finish()
+            }
         }
     }
 
@@ -135,24 +157,31 @@ class CsvToXmlActivity: AppCompatActivity() {
                 for(i in invoicesList){
                     if(i.invoiceNo == it.invoiceNo){
                         val itemLine = ItemLine()
-                        itemLine.barcode = it.searchResult[it.choice].barcode
-                        itemLine.medicineName = it.searchResult[it.choice].medicineName
-                        itemLine.quantity = it.qty
-                        itemLine.itemUnit = it.searchResult[it.choice].itemUnit
-                        itemLine.itemReserved1 = it.searchResult[it.choice].itemReserved1
-                        itemLine.qtyControl = it.searchResult[it.choice].quantityControl
 
-                        val unitPrice : Double = try{
-                            it.unitPriceString.toDouble()
+                        for(chosenIndex in 0 until it.searchResult.size){
+                            if(it.searchResult[chosenIndex].medicineName == it.chosenMedicine[0]){
+                                itemLine.barcode = it.searchResult[chosenIndex].barcode
+                                itemLine.medicineName = it.searchResult[chosenIndex].medicineName
+                                itemLine.quantity = it.qty
+                                itemLine.itemUnit = it.searchResult[chosenIndex].itemUnit
+                                itemLine.itemReserved1 = it.searchResult[chosenIndex].itemReserved1
+                                itemLine.qtyControl = it.searchResult[chosenIndex].quantityControl
+
+                                val unitPrice : Double = try{
+                                    it.unitPriceString.toDouble()
+                                }
+                                catch(e_ : Exception){
+                                    it.searchResult[chosenIndex].unitPrice
+                                }
+
+                                itemLine.unitPrice = unitPrice
+                                itemLine.brutoUnitPrice = unitPrice
+
+                                i.itemLines.add(itemLine)
+
+                                break
+                            }
                         }
-                        catch(e_ : Exception){
-                            it.searchResult[it.choice].unitPrice
-                        }
-
-                        itemLine.unitPrice = unitPrice
-                        itemLine.brutoUnitPrice = unitPrice
-
-                        i.itemLines.add(itemLine)
 
                         break
                     }
@@ -170,7 +199,16 @@ class CsvToXmlActivity: AppCompatActivity() {
                 finish()
             }
 
-            createXmlFile(path, dir)
+            CoroutineScope(Dispatchers.IO).launch {
+                val xmlFile = createXmlFile(path, dir)
+
+                withContext(Dispatchers.Main){
+                    val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
+                    xmlFileCreatedTextView.text = "File created at:\n${xmlFile.path}"
+
+                    csvToXmlFinishButton.isEnabled = true
+                }
+            }
         }
     }
 
@@ -205,7 +243,7 @@ class CsvToXmlActivity: AppCompatActivity() {
             }
             else if(csvRecord.get("INVOICE_NO").isNotEmpty()){
                 invoiceNo = csvRecord.get("INVOICE_NO").toLong()
-                println("Invoice No: $invoiceNo")
+//                println("Invoice No: $invoiceNo")
 
                 val invoiceDate = csvRecord.get("INVOICE_DATE")
                 val description = csvRecord.get("DESCRIPTION")
@@ -237,7 +275,7 @@ class CsvToXmlActivity: AppCompatActivity() {
     }
 
     private fun readItemLine(csvRecord : CSVRecord, invoiceNo : Long, databaseName: String, databaseVersion: Int) : ItemLine{
-        println(invoiceNo)
+//        println(invoiceNo)
         lastInvoice = invoiceNo
 
         val medicineDatabaseFileName = intent.getStringExtra(SelectCsvAndDatabaseActivity.EXT_DATABASE_FILE_NAME)
@@ -249,17 +287,19 @@ class CsvToXmlActivity: AppCompatActivity() {
 
         val barcode = csvRecord.get("BARCODE")
 
-        println("BARCODE: $barcode")
+//        println("BARCODE: $barcode")
 
         val qty = csvRecord.get("QUANTITY").toFloat()
         val itemUnit = csvRecord.get("ITEM_UNIT")
         val medicineName = csvRecord.get("ITEM_NAME").toUpperCase()
         val unitPriceString = csvRecord.get("UNIT_PRICE")
 
-        println("MEDICINE: $medicineName")
+//        println("MEDICINE: $medicineName")
         lastMedicine = medicineName
 
-        csvToXmlTextView.append("Converting INVOICE_NO: ${invoiceNo}\nMEDICINE: ${medicineName}...\n\n")
+        CoroutineScope(Dispatchers.Main).launch {
+            csvToXmlTextView.append("Converting INVOICE_NO: ${invoiceNo}\nMEDICINE: ${medicineName}...\n\n")
+        }
 
         var selectedMedicineName = ""
         var selectedBarcode = ""
@@ -363,7 +403,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         return vrb
     }
     
-    private fun createXmlFile(path: File, dir: File){
+    private fun createXmlFile(path: File, dir: File) : File{
         val xmlSerializer = Xml.newSerializer()
 
         val xmlFile = try {
@@ -392,7 +432,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         xmlSerializer.attribute(null, "OnError", "CONTINUE")
 
         invoicesList.forEach {
-            println("INVOICENO = ${it.invoiceNo}")
+//            println("INVOICENO = ${it.invoiceNo}")
 
             xmlSerializer.startTag(null, "SALESINVOICE")
             xmlSerializer.attribute(null, "operation", "Add")
@@ -403,7 +443,7 @@ class CsvToXmlActivity: AppCompatActivity() {
             var itemCount = 1
 
             for(item in it.itemLines){
-                println("MEDICINES = ${item.medicineName}")
+//                println("MEDICINES = ${item.medicineName}")
                 if(item.barcode == "Not Found"){
                     val notFoundMedicine = Medicine()
 
@@ -655,8 +695,10 @@ class CsvToXmlActivity: AppCompatActivity() {
 
         xmlFileOutputStream.close()
 
-        val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
-        xmlFileCreatedTextView.text = "File created at:\n${xmlFile.path}"
+        return xmlFile
+
+//        val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
+//        xmlFileCreatedTextView.text = "File created at:\n${xmlFile.path}"
     }
     
     private fun xmlTagText(tag: String, text: String?, xmlSerializer: XmlSerializer){

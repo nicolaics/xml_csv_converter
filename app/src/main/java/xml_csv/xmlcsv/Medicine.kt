@@ -7,6 +7,5 @@ class Medicine {
     var unitPrice : Double = 0.0
     var itemUnit : String? = null
     var itemReserved1 : String? = null
-//    var isFound : Boolean = true
     var invoiceNo : Long = 0
 }

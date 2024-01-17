@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -28,39 +29,17 @@ class SelectMedicineAdapter(val context: Context, var selectMedicineList : Array
         val inflater: LayoutInflater = LayoutInflater.from(context)
         val generatedView: View = inflater.inflate(R.layout.select_each_medicine, null)
 
-        val medicineListTextView = generatedView.findViewById<TextView>(R.id.listTextView)
-        val okButton = generatedView.findViewById<Button>(R.id.okButton)
-        val chooseMedicineEditText = generatedView.findViewById<EditText>(R.id.chooseMedicineEditText)
         val inputtedMedicineTextView = generatedView.findViewById<TextView>(R.id.inputtedMedicineTextView)
         val invoiceNoTextView = generatedView.findViewById<TextView>(R.id.invoiceNoTextView)
-        val choiceSavedTextView = generatedView.findViewById<TextView>(R.id.choiceSavedTextView)
+        val medicineRadioButtonListView = generatedView.findViewById<ListView>(R.id.medicineRadioButtonListView)
 
         inputtedMedicineTextView.text = "You inputted: ${selectMedicineList[p0].inputtedMedicine}"
         invoiceNoTextView.text = "Invoice No: ${selectMedicineList[p0].invoiceNo}"
 
-        var itemCount = 1
 
-        selectMedicineList[p0].searchResult.forEach {
-            medicineListTextView.append("${itemCount}. ${it.medicineName}\n\n")
-            itemCount++
-        }
-
-        okButton.setOnClickListener {
-            val choice = chooseMedicineEditText.text.toString().toInt()
-
-            if(choice in 1 until itemCount) {
-                chooseMedicineEditText.setTextColor(ContextCompat.getColor(context, R.color.green))
-
-                choiceSavedTextView.text = "Saved:\n$choice"
-
-                selectMedicineList[p0].choice = (choice - 1)
-            }
-            else{
-                chooseMedicineEditText.setTextColor(ContextCompat.getColor(context, R.color.dark_grey))
-                choiceSavedTextView.text = ""
-                Toast.makeText(context, "Choice invalid!", Toast.LENGTH_SHORT).show()
-            }
-        }
+        val medicineRadioButtonAdaptor = MedicineRadioButtonAdaptor(context, selectMedicineList[p0].searchResult,
+                                                                    selectMedicineList, p0)
+        medicineRadioButtonListView.adapter = medicineRadioButtonAdaptor
 
         return generatedView
     }

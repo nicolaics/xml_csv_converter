@@ -271,6 +271,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
                                                     "JOIN Salesman JOIN Customer " +
                                                     "on Invoice.salesman_id = Salesman.id " +
                                                     "AND Invoice.customer_id = Customer.id " +
+                                                    "AND Invoice.ship_to_1_id = Customer.id " +
                                                     "WHERE invoice_no = ?", arrayOf(invoiceNo.toString())
         )
 
@@ -286,9 +287,7 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         dbInvoice.salesman.setFirstName(additionalCursor.getString(additionalCursor.getColumnIndex("first_name")))
         dbInvoice.printed = invoiceCursor.getInt(invoiceCursor.getColumnIndex("printed"))
 
-        val shipTo1Id = invoiceCursor.getIntOrNull(invoiceCursor.getColumnIndex("ship_to_1_id"))
-
-        dbInvoice.shipTo1 = additionalCursor.getString(shipTo1Id?: 0)
+        dbInvoice.shipTo1 = dbInvoice.customer
         dbInvoice.arAccount = invoiceCursor.getDouble(invoiceCursor.getColumnIndex("ar_account"))
 
         invoiceCursor.close()
