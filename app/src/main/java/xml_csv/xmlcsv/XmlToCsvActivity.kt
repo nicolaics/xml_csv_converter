@@ -154,7 +154,6 @@ class XmlToCsvActivity: AppCompatActivity() {
     }
 
     private fun parse(inputStream: InputStream) : ArrayList<Invoice>{
-//    private fun parse(inputStream: InputStream, databaseFile: String, databaseVersion: Int) = CoroutineScope(Dispatchers.IO).async{
         val parserFactory = SAXParserFactory.newInstance()
         val parser = parserFactory.newSAXParser()
 

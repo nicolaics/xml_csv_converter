@@ -39,16 +39,4 @@ class Invoice{
      var currencyName : String = "IDR"
      var automaticInsertGrouping : String = ""
      var itemLines = ArrayList<ItemLine>()
-
-//    fun setTransactionId(transactionId : Double){
-//        this.transactionId = transactionId
-//    }
-//
-//    fun setInvoiceNo(invoiceNo : Double){
-//        this.invoiceNo = invoiceNo
-//    }
-//
-//    fun setInvoiceDate(invoiceDate : String){
-//        this.invoiceDate = invoiceDate
-//    }
 }
