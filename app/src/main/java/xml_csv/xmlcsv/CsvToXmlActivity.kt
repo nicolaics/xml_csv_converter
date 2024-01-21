@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
+// Won't need this
 class CsvToXmlActivity: AppCompatActivity() {
     companion object{
         const val EXT_MEDICINE_RESULT = "ext_medicine_result"
