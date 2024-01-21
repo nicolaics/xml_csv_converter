@@ -34,10 +34,6 @@ class SelectWhichMedicineActivity: AppCompatActivity() {
                 }
             }
 
-//            selectMedicineList.forEach {
-//                println(it.chosenMedicine[0])
-//            }
-
             if(hasChosen) {
                 val data = Gson().toJson(selectMedicineList)
 

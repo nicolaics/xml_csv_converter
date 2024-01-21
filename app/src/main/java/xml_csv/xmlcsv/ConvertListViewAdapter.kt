@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 
-class XmlToCsvListViewAdapter(val context: Context, val invoices: ArrayList<Long>) : BaseAdapter() {
+class ConvertListViewAdapter(val context: Context, val invoices: ArrayList<Long>) : BaseAdapter() {
     override fun getCount(): Int {
         return invoices.size
     }
@@ -22,7 +22,7 @@ class XmlToCsvListViewAdapter(val context: Context, val invoices: ArrayList<Long
 
     override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
         val inflater: LayoutInflater = LayoutInflater.from(context)
-        val generatedView: View = inflater.inflate(R.layout.xml_to_csv_adapter, null)
+        val generatedView: View = inflater.inflate(R.layout.convert_adapter, null)
 
         val convertingTextView = generatedView.findViewById<TextView>(R.id.xmlToCsvConvertingTextView)
 

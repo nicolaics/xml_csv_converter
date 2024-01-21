@@ -24,7 +24,7 @@ class XmlToCsvActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_xml_to_csv)
 
-        val finishButton = findViewById<Button>(R.id.finishButton)
+        val finishButton = findViewById<Button>(R.id.finishCsvToXmlButton)
         finishButton.isEnabled = false
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -72,14 +72,14 @@ class XmlToCsvActivity: AppCompatActivity() {
                     writeCsv(invoicesList)
                 }
 
-                val xmlToCsvListView = findViewById<ListView>(R.id.xmlToCsvListView)
+                val xmlToCsvListView = findViewById<ListView>(R.id.csvToXmlListView)
 
                 val database =
                     DatabaseHelper(applicationContext, null, databaseFile, databaseVersion)
                 database.addData(invoicesList, xmlToCsvListView, applicationContext)
 
                 withContext(Dispatchers.Main) {
-                    val fileCreatedTextView = findViewById<TextView>(R.id.fileCreatedTextView)
+                    val fileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
                     fileCreatedTextView.text = "File succesfully created at\n${csvFile.path}"
 
                     finishButton.isEnabled = true
@@ -215,6 +215,12 @@ class XmlToCsvActivity: AppCompatActivity() {
                         itemLine.unitRatio = convertInt(currentValue)?: 1
                     }
                     else if(localName.equals("ITEMRESERVED1")){
+                        val re = Regex(",")
+
+                        if(currentValue.contains(re)){
+                            currentValue = currentValue.replace(",", ".")
+                        }
+
                         itemLine.itemReserved1 = currentValue
                     }
                     else if(localName.equals("ITEMOVDESC")){
@@ -301,7 +307,6 @@ class XmlToCsvActivity: AppCompatActivity() {
         parser.parse(inputStream, defaultHandler)
 
         return invoices
-//        return@async invoices
     }
 
     private fun convertInt(text : String) : Int? {

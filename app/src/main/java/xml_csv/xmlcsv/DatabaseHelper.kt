@@ -7,12 +7,10 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.widget.ListView
 import androidx.core.database.getDoubleOrNull
-import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.roundToLong
 
 class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, databaseName : String, version : Int) :
@@ -210,10 +208,10 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
             dbWrite.insert("Invoice", null, invoiceValues)
             invoiceId++
 
-            tempInvoiceNoList.add(it.invoiceNo)
+            tempInvoiceNoList.add(0, it.invoiceNo)
 
             CoroutineScope(Dispatchers.Main).launch {
-                val xmlToCsvListViewAdapter = XmlToCsvListViewAdapter(context, tempInvoiceNoList)
+                val xmlToCsvListViewAdapter = ConvertListViewAdapter(context, tempInvoiceNoList)
                 listView.adapter = xmlToCsvListViewAdapter
             }
         }

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Xml
 import android.widget.Button
+import android.widget.ListView
 import android.widget.TextView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -61,10 +62,12 @@ class CsvToXmlActivity: AppCompatActivity() {
         csvToXmlFinishButton = findViewById<Button>(R.id.finishCsvToXmlButton)
         csvToXmlFinishButton.isEnabled = false
 
+        val convertListView = findViewById<ListView>(R.id.csvToXmlListView)
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 contentResolver.openInputStream(csvUri)?.use {
-                        inputStream -> invoicesList = readCsv(inputStream, databaseFile, databaseVersion)
+                        inputStream -> invoicesList = readCsv(inputStream, databaseFile, databaseVersion, convertListView)
                 }
 
                 if(selectMedicineList.size > 0) {
@@ -212,7 +215,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         }
     }
 
-    private fun readCsv(inputStream: InputStream, databaseName : String, databaseVersion : Int) : ArrayList<Invoice> {
+    private fun readCsv(inputStream: InputStream, databaseName : String, databaseVersion : Int, listView : ListView) : ArrayList<Invoice> {
         val reader = inputStream.bufferedReader()
         val bufferedReader = BufferedReader(reader)
         val csvParser = CSVParser(
@@ -221,6 +224,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         )
 
         val tempInvoicesList = ArrayList<Invoice>()
+        val tempInvoiceNoList = ArrayList<Long>()
 
         val db = DatabaseHelper(applicationContext, null, databaseName, databaseVersion)
 
@@ -261,6 +265,13 @@ class CsvToXmlActivity: AppCompatActivity() {
                 }
 
                 invoiceCount++
+
+                tempInvoiceNoList.add(0, invoiceNo)
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    val convertListViewAdapter = ConvertListViewAdapter(applicationContext, tempInvoiceNoList)
+                    listView.adapter = convertListViewAdapter
+                }
             }
             else if(csvRecord.get("INVOICE_NO").isEmpty()){
                 val itemLine = readItemLine(csvRecord, invoiceNo, databaseName, databaseVersion)
@@ -283,7 +294,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         val path = applicationContext.externalMediaDirs.first()
         val medicineDatabaseFile = File(path, medicineDatabaseFileName!!).path
 
-        val csvToXmlTextView = findViewById<TextView>(R.id.csvToXmlTextView)
+//        val csvToXmlTextView = findViewById<TextView>(R.id.csvToXmlTextView)
 
         val barcode = csvRecord.get("BARCODE")
 
@@ -297,9 +308,9 @@ class CsvToXmlActivity: AppCompatActivity() {
 //        println("MEDICINE: $medicineName")
         lastMedicine = medicineName
 
-        CoroutineScope(Dispatchers.Main).launch {
-            csvToXmlTextView.append("Converting INVOICE_NO: ${invoiceNo}\nMEDICINE: ${medicineName}...\n\n")
-        }
+//        CoroutineScope(Dispatchers.Main).launch {
+//            csvToXmlTextView.append("Converting INVOICE_NO: ${invoiceNo}\nMEDICINE: ${medicineName}...\n\n")
+//        }
 
         var selectedMedicineName = ""
         var selectedBarcode = ""
@@ -456,108 +467,118 @@ class CsvToXmlActivity: AppCompatActivity() {
                     continue
                 }
 
-                var change = false
+//                var change = false
+//
+//                if(item.medicineName.startsWith("ALAT TEST DARAH NESCO(CHOL")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("ANDANTOL JELLY 7")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("ATIVAN 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("BETADINE PLESTER AMPLOP ISI 5")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("BISOPROLOL 2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("BON ONE 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("BRICASMA RESPUL 2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("BRICASMA TURBUHALER 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("CADUET 10/20 MG")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("EXTRACE 200 6 AMP@2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("FIESTA GRAPE")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("FIESTA MAX DOTTED")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("FITKOM GUMMY BIRU")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("FLAGYL 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("FRIXITAS 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("HALOPERIDOL 1")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("INSTO COOL 7")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("KOLKATRIOL F 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("MELOXIN 7")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("MEXPHARM 7")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("OBH AFIAT 100")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("OSCAL 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("PRAMIVEX 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("RAMIPRIL 2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("RHEU-TREX 2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("SIFROL 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("TAMSULOSIN SR 0")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("TONAR TAB")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("TRIATEC 1")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("VELUTINE 2")){
+//                    change = true
+//                }
+//                else if(item.medicineName.startsWith("ZOLYSAN 0")){
+//                    change = true
+//                }
 
-                if(item.medicineName.startsWith("ALAT TEST DARAH NESCO(CHOL")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("ANDANTOL JELLY 7")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("ATIVAN 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("BETADINE PLESTER AMPLOP ISI 5")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("BISOPROLOL 2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("BON ONE 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("BRICASMA RESPUL 2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("BRICASMA TURBUHALER 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("CADUET 10/20 MG")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("EXTRACE 200 6 AMP@2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("FIESTA GRAPE")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("FIESTA MAX DOTTED")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("FITKOM GUMMY BIRU")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("FLAGYL 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("FRIXITAS 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("HALOPERIDOL 1")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("INSTO COOL 7")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("KOLKATRIOL F 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("MELOXIN 7")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("MEXPHARM 7")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("OBH AFIAT 100")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("OSCAL 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("PRAMIVEX 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("RAMIPRIL 2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("RHEU-TREX 2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("SIFROL 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("TAMSULOSIN SR 0")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("TONAR TAB")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("TRIATEC 1")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("VELUTINE 2")){
-                    change = true
-                }
-                else if(item.medicineName.startsWith("ZOLYSAN 0")){
-                    change = true
+//                if(change) {
+//                    val re = Regex(".")
+//
+//                    if(item.medicineName.contains(re)) {
+//                        item.medicineName = item.medicineName.replace(".", ",")
+//                    }
+//                }
+
+                val re = Regex(".")
+
+                if(item.medicineName.contains(re)){
+                    item.medicineName = item.medicineName.replace(".", ",")
                 }
 
-                if(change) {
-                    val re = Regex(".")
-
-                    if(item.medicineName.contains(re)) {
-                        item.medicineName = item.medicineName.replace(".", ",")
-                    }
+                if(item.itemReserved1?.contains(re) == true){
+                    item.itemReserved1 = item.itemReserved1?.replace(".", ",")
                 }
 
                 item.medicineName = replaceSpecialChars(item.medicineName)!!

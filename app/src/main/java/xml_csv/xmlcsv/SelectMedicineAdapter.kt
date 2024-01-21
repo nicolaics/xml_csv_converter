@@ -33,7 +33,15 @@ class SelectMedicineAdapter(val context: Context, var selectMedicineList : Array
         val invoiceNoTextView = generatedView.findViewById<TextView>(R.id.invoiceNoTextView)
         val medicineRadioButtonListView = generatedView.findViewById<ListView>(R.id.medicineRadioButtonListView)
 
-        inputtedMedicineTextView.text = "You inputted: ${selectMedicineList[p0].inputtedMedicine}"
+        var medicineName = selectMedicineList[p0].inputtedMedicine
+
+        val re = Regex(".")
+
+        if(medicineName.contains(re)){
+            medicineName = medicineName.replace(".", ",")
+        }
+
+        inputtedMedicineTextView.text = "You inputted: ${medicineName}"
         invoiceNoTextView.text = "Invoice No: ${selectMedicineList[p0].invoiceNo}"
 
 
