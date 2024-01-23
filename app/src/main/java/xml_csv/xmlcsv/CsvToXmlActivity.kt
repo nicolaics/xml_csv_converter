@@ -407,7 +407,10 @@ class CsvToXmlActivity: AppCompatActivity() {
 
         return vrb
     }
-    
+
+    // TODO: Change the destination folder for saving the xml file
+    // TODO: Create new folder special for saving XML file
+    // TODO: change the file name to IMPORTED_DATE-OF-INVOICE
     private fun createXmlFile(path: File, dir: File) : File{
         val xmlSerializer = Xml.newSerializer()
 
