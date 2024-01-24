@@ -83,9 +83,6 @@ class CsvToXmlActivity: AppCompatActivity() {
                     startActivityForResult(selectWhichMedicineIntent, 1000)
                 }
                 else {
-                    val date = LocalDate.now().toString()
-                    val dir = File(path, date)
-
                     if(medicineNotFoundList.size != 0) {
                         val notFoundData = Gson().toJson(medicineNotFoundList)
 
@@ -98,7 +95,7 @@ class CsvToXmlActivity: AppCompatActivity() {
                         finish()
                     }
                     else {
-                        val xmlFile = createXmlFile(path, dir)
+                        val xmlFile = createXmlFile(path)
 
                         withContext(Dispatchers.Main) {
                             val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
@@ -147,9 +144,6 @@ class CsvToXmlActivity: AppCompatActivity() {
 
         if(requestCode == 1000 && resultCode == RESULT_OK){
             val path = applicationContext.externalMediaDirs.first()
-            val date = LocalDate.now().toString()
-
-            val dir = File(path, date)
 
             val typeToken = object : TypeToken<ArrayList<SearchedMedicine>>() {}.type
             val finalSelectMedicineList = Gson().fromJson<ArrayList<SearchedMedicine>>(
@@ -203,7 +197,7 @@ class CsvToXmlActivity: AppCompatActivity() {
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                val xmlFile = createXmlFile(path, dir)
+                val xmlFile = createXmlFile(path)
 
                 withContext(Dispatchers.Main){
                     val xmlFileCreatedTextView = findViewById<TextView>(R.id.xmlFileCreatedTextView)
@@ -411,19 +405,16 @@ class CsvToXmlActivity: AppCompatActivity() {
     // TODO: Change the destination folder for saving the xml file
     // TODO: Create new folder special for saving XML file
     // TODO: change the file name to IMPORTED_DATE-OF-INVOICE
-    private fun createXmlFile(path: File, dir: File) : File{
+    private fun createXmlFile(path: File) : File{
         val xmlSerializer = Xml.newSerializer()
+        val invoiceDate = invoicesList[0].invoiceDate
+        val dir = File(path, "IMPORTED")
 
-        val xmlFile = try {
-            File(dir, "IMPORTED.xml")
+        if(!dir.exists()) {
+            dir.mkdirs()
         }
-        catch(e_: java.lang.Exception){
-            val newDateTime = LocalDateTime.now().toString()
-            val newDir = File(path, newDateTime)
-            newDir.mkdirs()
 
-            File(newDir, "IMPORTED.xml")
-        }
+        val xmlFile = File(dir, "IMPORTED_${invoiceDate}.xml")
 
         val xmlFileOutputStream = xmlFile.outputStream()
 
