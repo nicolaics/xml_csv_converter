@@ -11,7 +11,6 @@ import kotlinx.coroutines.*
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 import java.io.*
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.xml.parsers.SAXParserFactory
@@ -61,9 +60,9 @@ class XmlToCsvActivity: AppCompatActivity() {
                     invoicesList = parse(inputStream)
                 }
 
-                val date = LocalDate.now().toString()
+                val invoiceDate = invoicesList[0].invoiceDate
 
-                val dir = File(path, date)
+                val dir = File(path, invoiceDate)
                 dir.mkdirs()
 
                 val csvFile = File(dir, csvFileName)
