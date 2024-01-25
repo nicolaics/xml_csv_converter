@@ -294,7 +294,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         val qty = csvRecord.get("QUANTITY").toFloat()
         val itemUnit = csvRecord.get("ITEM_UNIT")
         val medicineName = csvRecord.get("ITEM_NAME").toUpperCase()
-        val unitPriceString = csvRecord.get("UNIT_PRICE")
+//        val unitPriceString = csvRecord.get("UNIT_PRICE")
 
 //        println("MEDICINE: $medicineName")
         lastMedicine = medicineName
@@ -304,6 +304,7 @@ class CsvToXmlActivity: AppCompatActivity() {
         var selectedItemUnit : String? = null
         var selectedQtyControl = 0
         var selectedItemReserved1 : String? = null
+        var selectedPrice = 0.0
         var isFound = true
 
         if(barcode.startsWith("R-")){
@@ -312,8 +313,15 @@ class CsvToXmlActivity: AppCompatActivity() {
             selectedItemUnit = itemUnit
             selectedQtyControl = 0
             selectedItemReserved1 = null
+            try{
+                selectedPrice = csvRecord.get("UNIT_PRICE").toDouble()
+            }
+            catch(e: Exception){
+                selectedPrice = 0.0
+            }
         }
         else{
+            // Find medicine in the database
             val medicineDb = MedicineDatabaseHelper(applicationContext, null, medicineDatabaseFile)
             searchResult = medicineDb.readMedicineDatabase(medicineName, applicationContext, invoiceNo)
 
@@ -330,6 +338,7 @@ class CsvToXmlActivity: AppCompatActivity() {
                 selectedItemUnit = searchResult[selection].itemUnit
                 selectedQtyControl = searchResult[selection].quantityControl
                 selectedItemReserved1 = searchResult[selection].itemReserved1
+                selectedPrice = searchResult[selection].unitPrice
             }
             else if(searchResult.size > 1){
                 val searchedMedicine = SearchedMedicine()
@@ -337,7 +346,6 @@ class CsvToXmlActivity: AppCompatActivity() {
                 searchedMedicine.invoiceNo = invoiceNo
                 searchedMedicine.inputtedMedicine = medicineName
                 searchedMedicine.qty = qty
-                searchedMedicine.unitPriceString = unitPriceString
 
                 selectMedicineList.add(searchedMedicine)
             }
@@ -348,21 +356,14 @@ class CsvToXmlActivity: AppCompatActivity() {
         val itemLine = ItemLine()
 
         if(isFound) {
-            val unitPrice: Double = try {
-                unitPriceString.toDouble()
-            }
-            catch(e_: Exception) {
-                searchResult[selection].unitPrice
-            }
-
             itemLine.barcode = selectedBarcode
             itemLine.medicineName = selectedMedicineName
             itemLine.quantity = qty
             itemLine.itemUnit = selectedItemUnit
             itemLine.itemReserved1 = selectedItemReserved1
             itemLine.qtyControl = selectedQtyControl
-            itemLine.unitPrice = unitPrice
-            itemLine.brutoUnitPrice = unitPrice
+            itemLine.unitPrice = selectedPrice
+            itemLine.brutoUnitPrice = selectedPrice
         }
         else{
             itemLine.barcode = selectedBarcode
