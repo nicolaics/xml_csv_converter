@@ -313,12 +313,7 @@ class CsvToXmlActivity: AppCompatActivity() {
             selectedItemUnit = itemUnit
             selectedQtyControl = 0
             selectedItemReserved1 = null
-            try{
-                selectedPrice = csvRecord.get("UNIT_PRICE").toDouble()
-            }
-            catch(e: Exception){
-                selectedPrice = 0.0
-            }
+            selectedPrice = 0.0
         }
         else{
             // Find medicine in the database
