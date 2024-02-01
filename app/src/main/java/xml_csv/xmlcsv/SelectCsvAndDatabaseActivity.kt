@@ -10,6 +10,7 @@ import android.provider.OpenableColumns
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import java.io.File
 
 class SelectCsvAndDatabaseActivity: AppCompatActivity() {
     companion object{
@@ -31,6 +32,20 @@ class SelectCsvAndDatabaseActivity: AppCompatActivity() {
         val selectCsvFileButton = findViewById<Button>(R.id.selectCsvFileButton)
         val selectedCsvFileName = findViewById<TextView>(R.id.selectedCsvTextView)
         val selectedMedicineDatabaseTextView = findViewById<TextView>(R.id.selectedMedicineDatabaseTextView)
+
+        val path = applicationContext.externalMediaDirs.first()
+
+        val searchedFile = path.walk().filter { it.name.endsWith(".sqlite-journal")}
+
+        try {
+            for(it in searchedFile) {
+                if(it.exists()) {
+                    it.delete()
+                }
+            }
+        }
+        catch(e: Exception){
+        }
 
 
         val selectCsvFileIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)

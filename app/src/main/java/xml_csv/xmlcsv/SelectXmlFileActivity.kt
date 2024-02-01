@@ -20,6 +20,19 @@ class SelectXmlFileActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_xml_file)
 
+        val path = applicationContext.externalMediaDirs.first()
+        val searchedFile = path.walk().filter { it.name.endsWith(".sqlite-journal")}
+
+        try {
+            for(it in searchedFile) {
+                if(it.exists()) {
+                    it.delete()
+                }
+            }
+        }
+        catch(e: Exception){
+        }
+
         val selectFileButton = findViewById<Button>(R.id.selectXmlFileButton)
 
         val selectFileIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
