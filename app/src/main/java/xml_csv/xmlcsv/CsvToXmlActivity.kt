@@ -539,6 +539,13 @@ class CsvToXmlActivity: AppCompatActivity() {
             }
 
             xmlTagText("WAREHOUSEID", it.warehouse, xmlSerializer)
+
+            val re = Regex(".")
+
+            if(it.description.contains(re)){
+                it.description = it.description.replace(".", ",")
+            }
+
             xmlTagText("DESCRIPTION", it.description, xmlSerializer)
             xmlTagText("SHIPDATE", it.shipDate, xmlSerializer)
             xmlTagText("DELIVERYORDER", it.deliveryOrder, xmlSerializer)

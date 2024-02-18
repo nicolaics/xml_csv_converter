@@ -257,6 +257,12 @@ class XmlToCsvActivity: AppCompatActivity() {
                         invoice.invoiceAmount = convertDouble(currentValue)?: 0.0
                     }
                     else if(localName.equals("DESCRIPTION")){
+                        val re = Regex(",")
+
+                        if(currentValue.contains(re)){
+                            currentValue = currentValue.replace(",", ".")
+                        }
+
                         invoice.description = currentValue
                     }
                     else if(localName.equals("SHIPDATE")){
