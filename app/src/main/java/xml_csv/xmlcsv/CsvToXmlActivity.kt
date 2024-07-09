@@ -70,6 +70,25 @@ class CsvToXmlActivity: AppCompatActivity() {
                 }
 
                 if(selectMedicineList.size > 0) {
+                    val checkMedicineAgain = mutableMapOf<Long, String>()
+
+                    for(it in selectMedicineList) {
+                        if(it.searchResult.size > 20) {
+                            checkMedicineAgain[it.invoiceNo] = it.inputtedMedicine
+                        }
+                    }
+
+                    val tooBigData = Gson().toJson(checkMedicineAgain.toMap())
+
+                    if(checkMedicineAgain.isNotEmpty()) {
+                        val tooBigErrorIntent = Intent(this@CsvToXmlActivity, ErrorActivity::class.java).apply {
+                            putExtra(EXT_MEDICINE_NOT_FOUND, tooBigData)
+                            putExtra(EXT_ERROR_TYPE, 2)
+                        }
+                        startActivity(tooBigErrorIntent)
+                        finish()
+                    }
+
                     val data = Gson().toJson(selectMedicineList)
 
                     val selectWhichMedicineIntent =
@@ -120,6 +139,7 @@ class CsvToXmlActivity: AppCompatActivity() {
                 exceptionAsString += "\n\n"
                 exceptionAsString += "Last Invoice: ${lastInvoice}\n"
                 exceptionAsString += "Last Medicine: ${lastMedicine}\n"
+                exceptionAsString += intent.getStringExtra(SelectCsvAndDatabaseActivity.EXT_DATABASE_FILE_NAME)
 
                 logFilePath.writeText(exceptionAsString)
 
@@ -470,7 +490,7 @@ class CsvToXmlActivity: AppCompatActivity() {
 
                 xmlTagText("KeyID", itemCount.toString(), xmlSerializer)
                 xmlTagText("ITEMNO", item.barcode, xmlSerializer)
-                xmlTagText("QUANTITY", item.quantity.toString(), xmlSerializer)
+                xmlTagText("QUANTITY", item.qtyToString(), xmlSerializer)
                 xmlTagText("ITEMUNIT", item.itemUnit, xmlSerializer)
                 xmlTagText("UNITRATIO", item.unitRatio.toString(), xmlSerializer)
                 xmlTagText("ITEMRESERVED1", item.itemReserved1, xmlSerializer)
