@@ -26,4 +26,15 @@ class ItemLine {
     var qtyControl : Int = 0
     var doseQ : String = ""
     var doId : String = ""
+
+    fun qtyToString(): String {
+        if(this.quantity.rem(1).equals(0.0)) {
+            return this.quantity.toInt().toString()
+        }
+        else {
+            return this.quantity.toString()
+        }
+
+
+    }
 }
