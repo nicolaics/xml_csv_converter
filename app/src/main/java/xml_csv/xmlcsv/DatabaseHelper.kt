@@ -264,32 +264,40 @@ class DatabaseHelper (context: Context, factory: SQLiteDatabase.CursorFactory?, 
         val dbRead = this.readableDatabase
 
         val invoiceCursor = dbRead.rawQuery("SELECT * FROM Invoice WHERE invoice_no = ?", arrayOf(invoiceNo.toString()))
-        val additionalCursor = dbRead.rawQuery("SELECT Salesman.last_name, Salesman.first_name, " +
-                                                    "Customer.customer FROM Invoice " +
-                                                    "JOIN Salesman JOIN Customer " +
-                                                    "on Invoice.salesman_id = Salesman.id " +
-                                                    "AND Invoice.customer_id = Customer.id " +
-                                                    "AND Invoice.ship_to_1_id = Customer.id " +
-                                                    "WHERE invoice_no = ?", arrayOf(invoiceNo.toString())
-        )
 
+        val salesmanCursor = dbRead.rawQuery("SELECT Salesman.last_name, Salesman.first_name " +
+                                                    "FROM Invoice JOIN Salesman " +
+                                                    "on Invoice.salesman_id = Salesman.id " +
+                                                    "WHERE invoice_no = ?", arrayOf(invoiceNo.toString()))
+
+        val customerCursor = dbRead.rawQuery("SELECT Customer.customer FROM Invoice JOIN Customer " +
+                                                    "on Invoice.customer_id = Customer.id " +
+                                                    "WHERE invoice_no = ?", arrayOf(invoiceNo.toString()))
+
+        val shipToCursor = dbRead.rawQuery("SELECT Customer.customer FROM Invoice " +
+                                                "JOIN Customer on Invoice.ship_to_1_id = Customer.id " +
+                                                "WHERE invoice_no = ?", arrayOf(invoiceNo.toString()))
         invoiceCursor.moveToFirst()
-        additionalCursor.moveToFirst()
+        salesmanCursor.moveToFirst()
+        customerCursor.moveToFirst()
+        shipToCursor.moveToFirst()
 
         dbInvoice.transactionId = invoiceCursor.getLong(invoiceCursor.getColumnIndex("transaction_id"))
         dbInvoice.cashDiscount = invoiceCursor.getDouble(invoiceCursor.getColumnIndex("cash_discount"))
         dbInvoice.shipDate = invoiceCursor.getString(invoiceCursor.getColumnIndex("ship_date"))
         dbInvoice.taxDate = invoiceCursor.getString(invoiceCursor.getColumnIndex("tax_date"))
-        dbInvoice.customer = additionalCursor.getString(additionalCursor.getColumnIndex("customer"))
-        dbInvoice.salesman.setLastName(additionalCursor.getStringOrNull(additionalCursor.getColumnIndex("last_name")))
-        dbInvoice.salesman.setFirstName(additionalCursor.getString(additionalCursor.getColumnIndex("first_name")))
+        dbInvoice.customer = customerCursor.getString(customerCursor.getColumnIndex("customer"))
+        dbInvoice.salesman.setLastName(salesmanCursor.getStringOrNull(salesmanCursor.getColumnIndex("last_name")))
+        dbInvoice.salesman.setFirstName(salesmanCursor.getString(salesmanCursor.getColumnIndex("first_name")))
         dbInvoice.printed = invoiceCursor.getInt(invoiceCursor.getColumnIndex("printed"))
 
-        dbInvoice.shipTo1 = dbInvoice.customer
+        dbInvoice.shipTo1 = shipToCursor.getString(shipToCursor.getColumnIndex("customer"))
         dbInvoice.arAccount = invoiceCursor.getDouble(invoiceCursor.getColumnIndex("ar_account"))
 
         invoiceCursor.close()
-        additionalCursor.close()
+        salesmanCursor.close()
+        customerCursor.close()
+        shipToCursor.close()
 
         dbRead.close()
 
