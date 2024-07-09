@@ -34,6 +34,16 @@ class ErrorActivity: AppCompatActivity() {
                 errorBodyTextView.append("Invoice No: ${it.invoiceNo}\nMedicine Name: ${it.medicineName}\n\n")
             }
         }
+        else if(errorType == 2){
+            errorTitleTextView.text = "Please check these medicines again"
+
+            val typeToken = object : TypeToken<Map<Long, String>>() {}.type
+            val medicineNotFound = Gson().fromJson<Map<Long, String>>(intent.getStringExtra(CsvToXmlActivity.EXT_MEDICINE_NOT_FOUND), typeToken)
+
+            medicineNotFound.forEach{
+                errorBodyTextView.append("Invoice No: ${it.key}\nMedicine Name: ${it.value}\n\n")
+            }
+        }
 
         errorOkButton.setOnClickListener {
             finish()
