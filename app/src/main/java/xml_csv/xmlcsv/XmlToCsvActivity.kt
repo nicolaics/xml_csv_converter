@@ -315,7 +315,7 @@ class XmlToCsvActivity: AppCompatActivity() {
 
     private fun convertInt(text : String) : Int? {
         return try{
-            text.toInt()
+            text.trim().toInt()
         }
         catch(e: java.lang.NumberFormatException){
             null
@@ -324,7 +324,7 @@ class XmlToCsvActivity: AppCompatActivity() {
 
     private fun convertDouble(text : String) : Double? {
         return try {
-            text.toDouble()
+            text.trim().toDouble()
         }
         catch(e: java.lang.NumberFormatException) {
             null
@@ -333,7 +333,7 @@ class XmlToCsvActivity: AppCompatActivity() {
 
     private fun convertLong(text : String) : Long? {
         return try {
-            text.toLong()
+            text.trim().toLong()
         }
         catch(e: java.lang.NumberFormatException) {
             null
@@ -342,7 +342,7 @@ class XmlToCsvActivity: AppCompatActivity() {
 
     private fun convertFloat(text : String) : Float? {
         return try {
-            text.toFloat()
+            text.trim().toFloat()
         }
         catch(e: java.lang.NumberFormatException) {
             null
